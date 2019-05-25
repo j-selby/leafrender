@@ -22,8 +22,8 @@ use crate::render::pi::shader::GLSLShader;
 use crate::render::pi::texture::GlTexture;
 use crate::render::pi::vbo::GLVBO;
 
-use crate::render::Texture;
 use crate::render::Drawer;
+use crate::render::Texture;
 
 #[derive(Ord, PartialOrd, Eq, PartialEq)]
 enum DrawState {
@@ -68,8 +68,7 @@ impl PiDrawer {
         if self.state != target {
             self.transitions += 1;
 
-            // TODO: Unbind previous state, if needed
-            // (disable_vertex_attrib_array)
+            // Unbind previous state, if needed
             match self.state {
                 DrawState::None => {}
                 DrawState::Colored => {
@@ -373,7 +372,7 @@ impl Drawer for PiDrawer {
     }
 
     /// Creates a new drawer.
-    fn new(title : &str, width : u32, height : u32) -> Result<Self, String> {
+    fn new(title: &str, width: u32, height: u32) -> Result<Self, String> {
         let context = Context::build()?;
 
         let size = Context::get_resolution();
@@ -403,25 +402,23 @@ impl Drawer for PiDrawer {
         let attr_textured_color = textured_shader.get_attribute("input_color");
         let attr_textured_uv = textured_shader.get_attribute("input_uv");
 
-        Ok(
-            PiDrawer {
-                context,
-                size,
-                state: DrawState::None,
-                colored: colored_shader,
-                textured: textured_shader,
-                vertex: vertex_vbo,
-                attr_colored_vertex,
-                attr_textured_vertex,
-                color: color_vbo,
-                attr_colored_color,
-                attr_textured_color,
-                uv: uv_vbo,
-                attr_textured_uv,
-                bg: None,
-                transitions: 0,
-            }
-        )
+        Ok(PiDrawer {
+            context,
+            size,
+            state: DrawState::None,
+            colored: colored_shader,
+            textured: textured_shader,
+            vertex: vertex_vbo,
+            attr_colored_vertex,
+            attr_textured_vertex,
+            color: color_vbo,
+            attr_colored_color,
+            attr_textured_color,
+            uv: uv_vbo,
+            attr_textured_uv,
+            bg: None,
+            transitions: 0,
+        })
     }
 }
 

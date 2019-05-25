@@ -8,9 +8,9 @@ use rusttype::Scale;
 use crate::pos::Position;
 
 use crate::render::Color;
-use crate::render::Texture;
 use crate::render::Dimensions;
 use crate::render::Drawer;
+use crate::render::Texture;
 
 use std::collections::BTreeMap;
 
@@ -117,15 +117,18 @@ impl<'a, T: Dimensions> FontCache<'a, T> {
     }
 
     /// Creates a new cache from a .ttf file.
-    pub fn from_bytes(data: &'a [u8]) -> Self {
-        let collection = FontCollection::from_bytes(data).expect("Failed to read font");
+    pub fn from_bytes(data: &'a [u8]) -> Result<Self, String> {
+        let collection =
+            FontCollection::from_bytes(data).map_err(|x| format!("Failed to read font: {}", x))?;
 
         // only succeeds if collection consists of one font
-        let font = collection.into_font().unwrap();
+        let font = collection
+            .into_font()
+            .map_err(|x| format!("Failed to read font: {}", x))?;
 
-        FontCache {
+        Ok(FontCache {
             font,
             cache: BTreeMap::new(),
-        }
+        })
     }
 }

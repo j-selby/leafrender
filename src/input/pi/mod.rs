@@ -65,4 +65,3 @@ impl Input for PiInput {
         }
     }
 }
-

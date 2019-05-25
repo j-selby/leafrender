@@ -1,5 +1,7 @@
-use crate::render::Texture;
+//! Manages OpenGL textures.
+//!
 use crate::render::Dimensions;
+use crate::render::Texture;
 
 use gl;
 
@@ -58,11 +60,11 @@ impl GlTexture {
             gl::BindTexture(gl::TEXTURE_2D, 0);
         }
 
-        return GlTexture {
+        GlTexture {
             width,
             height,
             ptr: texture_ref,
-        };
+        }
     }
 
     /// Converts a texture to a OpenGL reference.

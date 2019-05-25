@@ -1,4 +1,5 @@
-/// A holder for a OpenGL texture
+//! A holder for a OpenGLES texture.
+//!
 use opengles::glesv2 as gl;
 
 use leaffront_core::render::texture::Texture;

@@ -1,4 +1,5 @@
-/// Holds and parses GLSL shaders.
+//! Holds and parses GLSL shaders.
+
 use gl;
 use gl::types::GLint;
 
@@ -30,7 +31,7 @@ impl GLSLShader {
     /// Returns: Shader if compile succeeded, msg if failed.
     pub fn create_shader(vertex: &[u8], frag: &[u8]) -> Result<GLSLShader, String> {
         unsafe {
-            let mut status = gl::FALSE as GLint;
+            let mut status = GLint::from(gl::FALSE);
 
             // Create our shader program
             let program = gl::CreateProgram();
@@ -45,7 +46,7 @@ impl GLSLShader {
             gl::CompileShader(vert_shader);
             gl::GetShaderiv(vert_shader, gl::COMPILE_STATUS, &mut status);
 
-            if status == gl::FALSE as GLint {
+            if status == GLint::from(gl::FALSE) {
                 let mut len: GLint = 0;
                 gl::GetShaderiv(vert_shader, gl::INFO_LOG_LENGTH, &mut len);
                 let mut buf: Vec<u8> = vec![0; len as usize];
@@ -55,9 +56,7 @@ impl GLSLShader {
                     ptr::null_mut(),
                     buf.as_mut_ptr() as *mut gl::types::GLchar,
                 );
-                return Err(String::from_utf8(buf)
-                    .ok()
-                    .expect("ProgramInfoLog not valid utf8"));
+                return Err(String::from_utf8(buf).expect("ProgramInfoLog not valid utf8"));
             }
 
             gl::AttachShader(program, vert_shader);
@@ -72,7 +71,7 @@ impl GLSLShader {
             gl::CompileShader(frag_shader);
             gl::GetShaderiv(frag_shader, gl::COMPILE_STATUS, &mut status);
 
-            if status == gl::FALSE as GLint {
+            if status == GLint::from(gl::FALSE) {
                 let mut len: GLint = 0;
                 gl::GetShaderiv(frag_shader, gl::INFO_LOG_LENGTH, &mut len);
                 let mut buf: Vec<u8> = vec![0; len as usize];
@@ -82,9 +81,7 @@ impl GLSLShader {
                     ptr::null_mut(),
                     buf.as_mut_ptr() as *mut gl::types::GLchar,
                 );
-                return Err(String::from_utf8(buf)
-                    .ok()
-                    .expect("ProgramInfoLog not valid utf8"));
+                return Err(String::from_utf8(buf).expect("ProgramInfoLog not valid utf8"));
             }
 
             gl::AttachShader(program, frag_shader);
@@ -94,7 +91,7 @@ impl GLSLShader {
 
             gl::GetProgramiv(program, gl::LINK_STATUS, &mut status);
 
-            if status == gl::FALSE as GLint {
+            if status == GLint::from(gl::FALSE) {
                 let mut len: GLint = 0;
                 gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
                 let mut buf: Vec<u8> = vec![0; len as usize];
@@ -104,9 +101,7 @@ impl GLSLShader {
                     ptr::null_mut(),
                     buf.as_mut_ptr() as *mut gl::types::GLchar,
                 );
-                Err(String::from_utf8(buf)
-                    .ok()
-                    .expect("ProgramInfoLog not valid utf8"))
+                Err(String::from_utf8(buf).expect("ProgramInfoLog not valid utf8"))
             } else {
                 Ok(GLSLShader {
                     program,

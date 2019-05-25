@@ -14,6 +14,7 @@ use crate::pos::Position;
 use crate::pos::Rect;
 
 use image::DynamicImage;
+use image::RgbaImage;
 
 /// Represents a unsigned OpenGL color in Rust form.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
@@ -41,7 +42,7 @@ impl Color {
     }
 }
 
-/// Handles OpenGLES textures, and provides mechanisms for interacting/drawing on them
+/// Handles textures, and provides mechanisms for interacting/drawing on them
 /// safely.
 pub struct Texture {
     pub tex_data: Vec<u8>,
@@ -77,7 +78,6 @@ impl Texture {
     }
 }
 
-
 /// The dimensions of a object
 pub trait Dimensions {
     /// Returns the width of this object.
@@ -104,6 +104,9 @@ pub trait Drawer {
     /// Enables blending of a texture/etc with the background, if this is
     ///  explicitly required.
     fn enable_blending(&mut self);
+
+    /// Converts an RGBA image to a native image.
+    fn convert_image(&mut self, texture: &RgbaImage) -> Self::NativeTexture;
 
     /// Converts a texture to a native reference.
     fn convert_native_texture(&mut self, texture: Texture) -> Self::NativeTexture;
@@ -236,6 +239,7 @@ pub trait Drawer {
     /// Creates a new instance of this drawer.
     ///
     /// All parameters are handled only if the target platform handles them.
-    fn new(title : &str, width : u32, height : u32) -> Result<Self, String>
-        where Self: std::marker::Sized;
+    fn new(title: &str, width: u32, height: u32) -> Result<Self, String>
+    where
+        Self: std::marker::Sized;
 }

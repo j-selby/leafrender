@@ -1,10 +1,10 @@
 use glutin;
-use glutin::GlContext;
 
 use crate::input::Input;
 
 use crate::render::glutin::drawer::GlutinDrawer;
 
+/// Implements a basic input abstraction for Glutin.
 pub struct GlutinInput {
     mouse_down: bool,
     mouse_x: usize,
@@ -19,22 +19,22 @@ impl Input for GlutinInput {
         let events = &mut window.events_loop;
         let window = &window.gl_window;
 
-        events.poll_events(|event| match event {
-            glutin::Event::WindowEvent { event, .. } => match event {
-                glutin::WindowEvent::CloseRequested => self.running = false,
-                glutin::WindowEvent::Resized(size) => window.resize(size.to_physical(1.0)),
-                glutin::WindowEvent::MouseInput { state, .. } => {
-                    self.mouse_down = state == glutin::ElementState::Pressed;
+        events.poll_events(|event| {
+            if let glutin::Event::WindowEvent { event, .. } = event {
+                match event {
+                    glutin::WindowEvent::CloseRequested => self.running = false,
+                    glutin::WindowEvent::Resized(size) => window.resize(size.to_physical(1.0)),
+                    glutin::WindowEvent::MouseInput { state, .. } => {
+                        self.mouse_down = state == glutin::ElementState::Pressed;
+                    }
+                    glutin::WindowEvent::CursorMoved { position, .. } => {
+                        let (x, y): (i32, i32) = position.into();
+                        self.mouse_x = x as usize;
+                        self.mouse_y = y as usize;
+                    }
+                    _ => (),
                 }
-                glutin::WindowEvent::CursorMoved { position, .. } => {
-                    let (x, y): (i32, i32) = position.into();
-                    self.mouse_x = x as usize;
-                    self.mouse_y = y as usize;
-                }
-                _ => (),
-            },
-
-            _ => (),
+            }
         });
     }
 

@@ -1,3 +1,5 @@
+//! Manages OpenGL VBOs.
+//!
 use gl;
 
 use std::mem;

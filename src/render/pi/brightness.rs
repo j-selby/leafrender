@@ -1,4 +1,5 @@
-/// Manages the brightness of a Pi Touchscreen.
+//! Manages the brightness of a Pi Touchscreen.
+//!
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;

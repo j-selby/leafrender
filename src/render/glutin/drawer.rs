@@ -1,9 +1,10 @@
 //! Implementation of a drawer for Glutin.
 
-use crate::render::Texture;
 use crate::render::Drawer;
+use crate::render::Texture;
 
 use image::DynamicImage;
+use image::RgbaImage;
 
 use crate::render::glutin::texture::GlTexture;
 
@@ -16,7 +17,8 @@ use crate::render::Color;
 
 use glutin;
 use glutin::dpi::LogicalSize;
-use glutin::GlContext;
+use glutin::PossiblyCurrent;
+use glutin::WindowedContext;
 
 use gl;
 
@@ -35,7 +37,7 @@ enum DrawState {
 
 pub struct GlutinDrawer {
     pub events_loop: glutin::EventsLoop,
-    pub gl_window: glutin::GlWindow,
+    pub gl_window: WindowedContext<PossiblyCurrent>,
 
     colored: GLSLShader,
     textured: GLSLShader,
@@ -179,6 +181,7 @@ impl Drawer for GlutinDrawer {
 
         let (width, height): (u32, u32) = self
             .gl_window
+            .window()
             .get_inner_size()
             .expect("Failed to get size of current window")
             .into();
@@ -203,14 +206,12 @@ impl Drawer for GlutinDrawer {
         }
 
         // Draw our background here, if required
-        if transparent {
-            if self.background.is_some() {
-                let size = Rect::new(0, 0, self.get_width() as i32, self.get_height() as i32);
-                let tex = self.background.take();
-                let tex = tex.unwrap();
-                self.draw_texture_sized(&tex, &size, &Color::new_3byte(255, 255, 255));
-                self.background = Some(tex);
-            }
+        if transparent && self.background.is_some() {
+            let size = Rect::new(0, 0, self.get_width() as i32, self.get_height() as i32);
+            let tex = self.background.take();
+            let tex = tex.unwrap();
+            self.draw_texture_sized(&tex, &size, &Color::new_3byte(255, 255, 255));
+            self.background = Some(tex);
         }
     }
 
@@ -222,6 +223,10 @@ impl Drawer for GlutinDrawer {
         }
     }
 
+    fn convert_image(&mut self, texture: &RgbaImage) -> Self::NativeTexture {
+        GlTexture::from_image(&texture)
+    }
+
     fn convert_native_texture(&mut self, texture: Texture) -> Self::NativeTexture {
         GlTexture::from_texture(&texture)
     }
@@ -230,6 +235,7 @@ impl Drawer for GlutinDrawer {
     fn get_width(&self) -> usize {
         let (width, _): (u32, u32) = self
             .gl_window
+            .window()
             .get_inner_size()
             .expect("Failed to get size of current window")
             .into();
@@ -241,11 +247,25 @@ impl Drawer for GlutinDrawer {
     fn get_height(&self) -> usize {
         let (_, height): (u32, u32) = self
             .gl_window
+            .window()
             .get_inner_size()
             .expect("Failed to get size of current window")
             .into();
 
         height as usize
+    }
+
+    /// Uses the specified image as a background. This is provided as several platforms
+    /// have ways to accelerate this beyond OpenGL calls.
+    fn set_background(&mut self, image: DynamicImage) {
+        let image = GlTexture::from_image(&image.to_rgba());
+        self.background = Some(image);
+    }
+
+    /// Sets the brightness of the screen.
+    fn set_brightness(&mut self, _val: u8) -> ::std::io::Result<()> {
+        // NOOP
+        Ok(())
     }
 
     /// Draws a texture to the screen, with a specified set of vertices to draw to, a UV
@@ -291,42 +311,32 @@ impl Drawer for GlutinDrawer {
         }
     }
 
-    /// Uses the specified image as a background. This is provided as several platforms
-    /// have ways to accelerate this beyond OpenGL calls.
-    fn set_background(&mut self, image: DynamicImage) {
-        let image = GlTexture::from_image(&image.to_rgba());
-        self.background = Some(image);
-    }
-
-    /// Sets the brightness of the screen.
-    fn set_brightness(&mut self, _val: u8) -> ::std::io::Result<()> {
-        // NOOP
-        Ok(())
-    }
-
     fn get_transition_count(&self) -> usize {
         self.transition_count
     }
 
-    fn new(title : &str, width : u32, height : u32) -> Result<Self, String> {
+    fn new(title: &str, width: u32, height: u32) -> Result<Self, String> {
         let events_loop = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new()
             .with_title(title)
-            .with_dimensions(LogicalSize::new(width as _, height as _));
-        let context = glutin::ContextBuilder::new()
+            .with_dimensions(LogicalSize::new(f64::from(width), f64::from(height)));
+        let gl_window = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Latest)
             .with_gl_profile(glutin::GlProfile::Core)
-            .with_vsync(true);
-        let gl_window = glutin::GlWindow::new(window,
-                                              context, &events_loop).unwrap();
+            .with_vsync(true)
+            .build_windowed(window, &events_loop)
+            .map_err(|x| format!("Failed to create glutin context: {}", x))?;
 
-        unsafe {
-            gl_window.make_current().map_err(|x| format!("{}", x))?;
-        }
+        let gl_window = unsafe {
+            gl_window
+                .make_current()
+                .map_err(|(_, err)| format!("{}", err))?
+        };
 
         let (width, height): (u32, u32) = gl_window
+            .window()
             .get_inner_size()
-            .ok_or(format!("Failed to get window size"))?
+            .ok_or_else(|| "Failed to get window size".to_string())?
             .into();
 
         unsafe {
@@ -367,27 +377,24 @@ impl Drawer for GlutinDrawer {
         let attr_textured_color = textured_shader.get_attribute("input_color");
         let attr_textured_uv = textured_shader.get_attribute("input_uv");
 
-
-        Ok(
-            GlutinDrawer {
-                events_loop,
-                gl_window,
-                colored: colored_shader,
-                textured: textured_shader,
-                state: DrawState::None,
-                vertex: vertex_vbo,
-                attr_colored_vertex,
-                attr_textured_vertex,
-                color: color_vbo,
-                attr_colored_color,
-                attr_textured_color,
-                uv: uv_vbo,
-                attr_textured_uv,
-                background: None,
-                transition_count: 0,
-                calls: 0,
-            }
-        )
+        Ok(GlutinDrawer {
+            events_loop,
+            gl_window,
+            colored: colored_shader,
+            textured: textured_shader,
+            state: DrawState::None,
+            vertex: vertex_vbo,
+            attr_colored_vertex,
+            attr_textured_vertex,
+            color: color_vbo,
+            attr_colored_color,
+            attr_textured_color,
+            uv: uv_vbo,
+            attr_textured_uv,
+            background: None,
+            transition_count: 0,
+            calls: 0,
+        })
     }
 }
 

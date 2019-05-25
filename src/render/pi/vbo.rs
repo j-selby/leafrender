@@ -1,4 +1,5 @@
-/// Manages OpenGLES VBOs.
+//! Manages OpenGLES VBOs.
+
 use opengles::glesv2 as gl;
 
 pub struct GLVBO {

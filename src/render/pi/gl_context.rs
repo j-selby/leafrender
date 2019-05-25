@@ -1,5 +1,7 @@
-/// Manages the configuration of a Raspberry Pi to get a GLES context.
-// Code from https://github.com/seankerr/rust-rpi-examples
+//! Manages the configuration of a Raspberry Pi to get a GLES context.
+//!
+//! Some code from https://github.com/seankerr/rust-rpi-examples
+
 use egl;
 use egl::{EGLConfig, EGLContext, EGLDisplay, EGLNativeDisplayType, EGLSurface};
 

@@ -1,4 +1,5 @@
-/// Holds and parses GLSL shaders.
+//! Holds and parses GLSL shaders.
+
 use opengles::glesv2 as gl;
 
 pub struct GLSLShader {
