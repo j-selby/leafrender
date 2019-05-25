@@ -1,0 +1,10 @@
+[package]
+name = "kitchensink"
+version = "0.1.0"
+authors = ["James <jselby@jselby.net>"]
+edition = "2018"
+
+[dependencies]
+leafrender = {path = "../../"}
+
+image = "0.21"
