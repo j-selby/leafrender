@@ -128,3 +128,7 @@ drawer.draw_texture(&image, &Position {
 
 - 3D (too much to control here)
 - Custom shaders
+
+# License
+
+LeafRender is licensed under the Apache 2.0 license, available [here](LICENSE).

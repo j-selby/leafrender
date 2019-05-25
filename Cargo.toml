@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["James <jselby@jselby.net>"]
 edition = "2018"
 description = "LeafRender is a simply, easy to use library to just get pixels onto the screen, regardless of your platform."
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/j-selby/leafrender"
 
 [dependencies]
 # Shared
