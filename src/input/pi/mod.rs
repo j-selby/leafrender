@@ -50,7 +50,7 @@ impl Input for PiInput {
         true
     }
 
-    pub fn new() -> Self {
+    fn new() -> Self {
         let devices = evdev::enumerate();
 
         for device in &devices {

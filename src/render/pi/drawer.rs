@@ -3,6 +3,7 @@
 use opengles::glesv2 as gl;
 
 use image::DynamicImage;
+use image::RgbaImage;
 
 use videocore::dispmanx;
 use videocore::dispmanx::ResourceHandle;
@@ -196,6 +197,10 @@ impl Drawer for PiDrawer {
         gl::blend_func(gl::GL_SRC_ALPHA, gl::GL_ONE_MINUS_SRC_ALPHA);
     }
 
+    fn convert_image(&mut self, texture: &RgbaImage) -> Self::NativeTexture {
+        GlTexture::from_image(&texture)
+    }
+
     fn convert_native_texture(&mut self, texture: Texture) -> Self::NativeTexture {
         GlTexture::from_texture(&texture)
     }
@@ -384,8 +389,8 @@ impl Drawer for PiDrawer {
         let uv_vbo = GLVBO::new();
 
         let colored_shader = GLSLShader::create_shader(
-            include_bytes!("../../../res/shaders/color.vert"),
-            include_bytes!("../../../res/shaders/color.frag"),
+            include_bytes!("../../../res/pi_shaders/color.vert"),
+            include_bytes!("../../../res/pi_shaders/color.frag"),
         )?;
 
         colored_shader.use_program();
@@ -393,8 +398,8 @@ impl Drawer for PiDrawer {
         let attr_colored_color = colored_shader.get_attribute("input_color");
 
         let textured_shader = GLSLShader::create_shader(
-            include_bytes!("../../../res/shaders/tex.vert"),
-            include_bytes!("../../../res/shaders/tex.frag"),
+            include_bytes!("../../../res/pi_shaders/tex.vert"),
+            include_bytes!("../../../res/pi_shaders/tex.frag"),
         )?;
 
         textured_shader.use_program();

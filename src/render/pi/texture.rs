@@ -2,8 +2,8 @@
 //!
 use opengles::glesv2 as gl;
 
-use leaffront_core::render::texture::Texture;
-use leaffront_core::render::Dimensions;
+use crate::render::Dimensions;
+use crate::render::Texture;
 
 use image::RgbaImage;
 
